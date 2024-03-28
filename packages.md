@@ -1,5 +1,5 @@
 ```
-github.com/lib/pq - sql driver
+github.com/lib/pq - postgres driver
 ```
 
 ```
