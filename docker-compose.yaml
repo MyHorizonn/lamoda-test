@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+    web:
+        build: .
+        env_file:
+        - .env
+        tty: true
+        working_dir: /lamoda-test
+        ports:
+        - "8000:8000"
+        volumes:
+        - .:/lamoda-test
+        links:
+        - postgresdb
+    postgresdb:
+        image: postgres:15
+        environment:
+        - POSTGRES_USER=${DB_USER}
+        - POSTGRES_PASSWORD=${DB_PASSWORD}
+        - POSTGRES_DB=${DB_NAME}
+        ports:
+        - "5432:5432"
+        volumes:
+        - postgres-db:/var/lib/postgresql/data
+        - ./create_db.sql:/docker-entrypoint-initdb.d/create_db.sql
+volumes:
+  postgres-db:
