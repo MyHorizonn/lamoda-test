@@ -5,15 +5,17 @@ import (
 	"fmt"
 	"lamoda-test/internal/handler/types"
 	goods "lamoda-test/internal/storage"
+	"log"
 	"net/http"
 )
 
 func CheckGoods(w http.ResponseWriter, r *http.Request, db goods.Storage) {
 	switch r.Method {
 	case "POST":
-		goods, err := db.CheckGood()
+		goods, err := db.CheckGoods()
 		if err != nil {
-			http.Error(w, fmt.Sprintf("error creating, %v", err), http.StatusInternalServerError)
+			log.Printf("error checking goods: %v\n", err)
+			http.Error(w, fmt.Sprintf("error checking goods: %v", err), http.StatusInternalServerError)
 			return
 		}
 		w.WriteHeader(http.StatusCreated)
@@ -21,7 +23,8 @@ func CheckGoods(w http.ResponseWriter, r *http.Request, db goods.Storage) {
 		response := types.GoodsResp{Goods: goods}
 		jsonErr := json.NewEncoder(w).Encode(response)
 		if jsonErr != nil {
-			http.Error(w, fmt.Sprintf("error %v", jsonErr), http.StatusInternalServerError)
+			log.Printf("error while encoding response: %v\n", jsonErr)
+			http.Error(w, fmt.Sprintf("error while encoding response: %v", jsonErr), http.StatusInternalServerError)
 		}
 	default:
 		http.Error(w, fmt.Sprintf("method %s is not allowed", r.Method), http.StatusMethodNotAllowed)

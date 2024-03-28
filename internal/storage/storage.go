@@ -1,9 +1,9 @@
 package goods
 
 type Storage interface {
-	ReserveGoods(good Goods) error
-	FreeGoods(good Goods) error
-	CheckGood() ([]Goods, error)
+	ReserveGood(good Goods) error
+	FreeGood(good Goods) error
+	CheckGoods() ([]Goods, error)
 }
 
 type Goods struct {
@@ -15,5 +15,5 @@ type Goods struct {
 
 type Store struct {
 	Name          string `json:"name" db:"name"`
-	Accessibility bool   `json:"bool" db:"bool"`
+	Accessibility bool   `json:"accessibility" db:"accessibility"`
 }
