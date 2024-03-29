@@ -8,6 +8,7 @@ import (
 	"lamoda-test/internal/storage/postgres"
 	"log"
 	"os"
+	"runtime"
 
 	"github.com/joho/godotenv"
 )
@@ -23,7 +24,7 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	dbOp.SetMaxOpenConns(10)
+	dbOp.SetMaxOpenConns(runtime.NumCPU())
 	db = &postgres.Postgres{Client: dbOp}
 	handler.StartServer(db)
 }

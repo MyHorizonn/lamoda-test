@@ -42,7 +42,7 @@ func (p *Postgres) ReserveGood(good goods.Goods) error {
 			uuid = $1 AND amount >= $2`,
 		good.Uuid, good.Amount)
 	if err != nil {
-		return nil
+		return err
 	}
 	rowsAffected, err = res.RowsAffected()
 	if err != nil {
@@ -83,7 +83,6 @@ func (p *Postgres) FreeGood(good goods.Goods) error {
 			uuid = $1`,
 		good.Uuid, good.Amount)
 	if err != nil {
-		log.Printf("err: %v\n", err)
 		return err
 	}
 	return txn.Commit()
