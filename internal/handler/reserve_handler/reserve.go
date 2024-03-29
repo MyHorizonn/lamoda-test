@@ -30,7 +30,7 @@ func ReserveGoods(w http.ResponseWriter, r *http.Request, db goods.Storage) {
 		wg.Add(len(req.Goods))
 		for i, good := range req.Goods {
 			go func(good goods.Goods, idx int) {
-				err := db.ReserveGood(good)
+				err := db.ReserveGood(good, req.Store)
 				reserveErr := types.GoodsResult{Uuid: good.Uuid, Status: fmt.Sprintf("reserved %d items", good.Amount)}
 				if err != nil {
 					reserveErr.Status = err.Error()

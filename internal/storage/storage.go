@@ -1,9 +1,9 @@
 package goods
 
 type Storage interface {
-	ReserveGood(good Goods) error
-	FreeGood(good Goods) error
-	CheckGoods() ([]Goods, error)
+	ReserveGood(good Goods, store int) error
+	FreeGood(good Goods, store int) error
+	CheckGoods(store int) ([]Goods, error)
 }
 
 type Goods struct {

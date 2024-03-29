@@ -7,7 +7,12 @@ type GoodsResp struct {
 }
 
 type GoodsReq struct {
+	Store int           `json:"store"`
 	Goods []goods.Goods `json:"goods"`
+}
+
+type CheckGoodsReq struct {
+	Store int `json:"store"`
 }
 
 type GoodsResult struct {
