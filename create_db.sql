@@ -92,3 +92,19 @@ ALTER TABLE ONLY goods_in_store
 
 ALTER TABLE ONLY goods_in_store
     ADD CONSTRAINT store_fk FOREIGN KEY (store_id) REFERENCES store(id);
+
+
+insert into store (name, accessibility) values ('store1', TRUE);
+insert into store (name, accessibility) values ('store2', TRUE);
+insert into store (name, accessibility) values ('store3', FALSE);
+
+insert into goods (uuid, name, size) values ('1720f137-4e06-427a-aa0c-6b22c35eecc6', 'goods1', '50x50x10');
+insert into goods (uuid, name, size) values ('399861f6-6f57-413d-97cf-c73b3ab09de1', 'goods2', '10x10x10');
+
+
+insert into goods_in_store (store_id, goods_uuid, amount) values (1, '1720f137-4e06-427a-aa0c-6b22c35eecc6', 100);
+insert into goods_in_store (store_id, goods_uuid, amount) values (2, '1720f137-4e06-427a-aa0c-6b22c35eecc6', 50);
+insert into goods_in_store (store_id, goods_uuid, amount) values (1, '399861f6-6f57-413d-97cf-c73b3ab09de1', 200);
+insert into goods_in_store (store_id, goods_uuid, amount) values (2, '399861f6-6f57-413d-97cf-c73b3ab09de1', 300);
+insert into goods_in_store (store_id, goods_uuid, amount) values (3, '1720f137-4e06-427a-aa0c-6b22c35eecc6', 50);
+insert into goods_in_store (store_id, goods_uuid, amount) values (3, '399861f6-6f57-413d-97cf-c73b3ab09de1', 0);
