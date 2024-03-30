@@ -6,6 +6,12 @@
 make up
 ```
 
+## Run tests
+
+```
+make test
+```
+
 ## API
 ### Check remaining goods in store
 
