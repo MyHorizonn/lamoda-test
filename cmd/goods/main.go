@@ -24,6 +24,7 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	defer dbOp.Close()
 	dbOp.SetMaxOpenConns(runtime.NumCPU())
 	db = &postgres.Postgres{Client: dbOp}
 	handler.StartServer(db)
