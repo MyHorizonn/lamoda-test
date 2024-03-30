@@ -30,8 +30,8 @@ func FreeGoods(w http.ResponseWriter, r *http.Request, db goods.Storage) {
 		wg.Add(len(req.Goods))
 		for i, good := range req.Goods {
 			go func(good goods.Goods, idx int) {
-				err := db.FreeGood(good, req.Store)
-				reserveErr := types.GoodsResult{Uuid: good.Uuid, Status: fmt.Sprintf("freed %d items", good.Amount)}
+				err := db.FreeGood(good)
+				reserveErr := types.GoodsResult{Uuid: good.Uuid, Status: "OK"}
 				if err != nil {
 					reserveErr.Status = err.Error()
 				}

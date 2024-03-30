@@ -13,7 +13,7 @@ type Postgres struct {
 	Client *sql.DB
 }
 
-func (p *Postgres) ReserveGood(good goods.Goods, store int) error {
+func (p *Postgres) ReserveGood(good goods.Goods) error {
 	log.Printf("start reserving %s good\n", good.Uuid)
 	txn, err := p.Client.Begin()
 	if err != nil {
@@ -22,45 +22,60 @@ func (p *Postgres) ReserveGood(good goods.Goods, store int) error {
 	defer func() {
 		_ = txn.Rollback()
 	}()
-	res, err := txn.Exec(`
-	SELECT store_id, goods_uuid, amount, reserved 
+	_, err = txn.Exec(`
+	DECLARE goods_cursor CURSOR FOR
+	SELECT a.id, (amount - reserved) as left
 	FROM goods_in_store a
 	JOIN store b ON a.store_id = b.id
-	WHERE goods_uuid = $1 AND store_id = $2 AND b.accessibility
+	WHERE goods_uuid = $1 AND b.accessibility AND (amount - reserved) > 0
+	ORDER BY a.store_id
 	FOR UPDATE;`,
-		good.Uuid, store)
+		good.Uuid)
 	if err != nil {
 		return err
 	}
-	rowsAffected, err := res.RowsAffected()
+	leftGoodsAmount := 0
+	err = txn.QueryRow(`
+		SELECT SUM(amount - reserved) as left
+		FROM goods_in_store a
+		JOIN store b ON a.store_id = b.id
+		WHERE goods_uuid = $1 AND b.accessibility
+	`, good.Uuid).Scan(&leftGoodsAmount)
 	if err != nil {
 		return err
 	}
-	if rowsAffected < 1 {
-		return fmt.Errorf("no goods with this uuid or can't get store with this id or store is not avaliable in that moment")
+	if leftGoodsAmount < good.Amount {
+		return fmt.Errorf("not enough free goods in stores")
 	}
-	res, err = txn.Exec(`
-	UPDATE
-	goods_in_store
-	SET
-	reserved = reserved + $2
-	WHERE
-	goods_uuid = $1 AND store_id = $3 AND amount - reserved >= $2`,
-		good.Uuid, good.Amount, store)
-	if err != nil {
-		return err
-	}
-	rowsAffected, err = res.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if rowsAffected < 1 {
-		return fmt.Errorf("can't reserve that much")
+	amountToReserve := good.Amount
+	for amountToReserve > 0 {
+		var rowId int
+		var canReserve int
+		if err := txn.QueryRow(
+			`FETCH NEXT FROM goods_cursor`,
+		).Scan(&rowId, &canReserve); err != nil {
+			if err == sql.ErrNoRows {
+				break
+			}
+			return err
+		}
+		_, err := txn.Exec(`
+			UPDATE
+			goods_in_store
+			SET
+			reserved = CASE WHEN (amount - reserved) > $2 THEN reserved + $2 ELSE amount END
+			WHERE
+			id = $1`,
+			rowId, amountToReserve)
+		if err != nil {
+			return err
+		}
+		amountToReserve -= canReserve
 	}
 	return txn.Commit()
 }
 
-func (p *Postgres) FreeGood(good goods.Goods, store int) error {
+func (p *Postgres) FreeGood(good goods.Goods) error {
 	log.Printf("start freeing %s good\n", good.Uuid)
 	txn, err := p.Client.Begin()
 	if err != nil {
@@ -69,40 +84,55 @@ func (p *Postgres) FreeGood(good goods.Goods, store int) error {
 	defer func() {
 		_ = txn.Rollback()
 	}()
-	res, err := txn.Exec(`
-	SELECT * 
+	_, err = txn.Exec(`
+	DECLARE goods_cursor CURSOR FOR
+	SELECT a.id, reserved
 	FROM goods_in_store a
 	JOIN store b ON a.store_id = b.id
-	WHERE goods_uuid = $1 AND store_id = $2 AND b.accessibility
+	WHERE goods_uuid = $1 AND b.accessibility AND reserved > 0
+	ORDER BY a.store_id
 	FOR UPDATE;`,
-		good.Uuid, store)
+		good.Uuid)
 	if err != nil {
 		return err
 	}
-	rowsAffected, err := res.RowsAffected()
+	reservedAmount := 0
+	err = txn.QueryRow(`
+		SELECT SUM(reserved)
+		FROM goods_in_store a
+		JOIN store b ON a.store_id = b.id
+		WHERE goods_uuid = $1 AND b.accessibility
+	`, good.Uuid).Scan(&reservedAmount)
 	if err != nil {
 		return err
 	}
-	if rowsAffected < 1 {
-		return fmt.Errorf("no goods with this uuid or can't get store with this id or store is not avaliable in that moment")
+	if reservedAmount < good.Amount {
+		return fmt.Errorf("not enough reserved goods in stores")
 	}
-	res, err = txn.Exec(`
-	UPDATE 
-	goods_in_store
-	SET
-	reserved = reserved - $2
-	WHERE 
-	goods_uuid = $1 AND store_id = $3 AND reserved >= $2`,
-		good.Uuid, good.Amount, store)
-	if err != nil {
-		return err
-	}
-	rowsAffected, err = res.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if rowsAffected < 1 {
-		return fmt.Errorf("can't free that much")
+	amountToFree := good.Amount
+	for amountToFree > 0 {
+		var rowId int
+		var canFree int
+		if err := txn.QueryRow(
+			`FETCH NEXT FROM goods_cursor`,
+		).Scan(&rowId, &canFree); err != nil {
+			if err == sql.ErrNoRows {
+				break
+			}
+			return err
+		}
+		_, err := txn.Exec(`
+			UPDATE
+			goods_in_store
+			SET
+			reserved = CASE WHEN reserved > $2 THEN reserved - $2 ELSE 0 END
+			WHERE
+			id = $1`,
+			rowId, amountToFree)
+		if err != nil {
+			return err
+		}
+		amountToFree -= canFree
 	}
 	return txn.Commit()
 }

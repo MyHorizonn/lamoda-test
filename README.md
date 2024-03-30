@@ -28,7 +28,7 @@ curl -H 'Content-Type: application/json' -X POST -d '{"store": 1}' http://localh
 
 #### Request:
 ```
-curl -H 'Content-Type: application/json' -X POST -d '{"store" : 2, "goods": [
+curl -H 'Content-Type: application/json' -X POST -d '{"goods": [
     {"uuid": "1720f137-4e06-427a-aa0c-6b22c35eecc6", "amount": 10}, 
     {"uuid": "399861f6-6f57-413d-97cf-c73b3ab09de1", "amount": 10}]}' http://localhost:8000/reserve_goods
 ```
@@ -37,8 +37,8 @@ curl -H 'Content-Type: application/json' -X POST -d '{"store" : 2, "goods": [
 ```
 {
     "result":[
-        {"uuid":"1720f137-4e06-427a-aa0c-6b22c35eecc6","status":"reserved 10 items"},
-        {"uuid":"399861f6-6f57-413d-97cf-c73b3ab09de1","status":"reserved 10 items"}
+        {"uuid":"1720f137-4e06-427a-aa0c-6b22c35eecc6","status":"OK"},
+        {"uuid":"399861f6-6f57-413d-97cf-c73b3ab09de1","status":"OK"}
     ]
 }
 ```
@@ -47,7 +47,7 @@ curl -H 'Content-Type: application/json' -X POST -d '{"store" : 2, "goods": [
 
 #### Request:
 ```
-curl -H 'Content-Type: application/json' -X POST -d '{"store" : 2, "goods": [
+curl -H 'Content-Type: application/json' -X POST -d '{"goods": [
     {"uuid": "1720f137-4e06-427a-aa0c-6b22c35eecc6", "amount": 10}, 
     {"uuid": "399861f6-6f57-413d-97cf-c73b3ab09de1", "amount": 10}]}' http://localhost:8000/free_goods
 ```
@@ -56,8 +56,8 @@ curl -H 'Content-Type: application/json' -X POST -d '{"store" : 2, "goods": [
 ```
 {
     "result":[
-        {"uuid":"1720f137-4e06-427a-aa0c-6b22c35eecc6","status":"freed 10 items"},
-        {"uuid":"399861f6-6f57-413d-97cf-c73b3ab09de1","status":"freed 10 items"}
+        {"uuid":"1720f137-4e06-427a-aa0c-6b22c35eecc6","status":"OK"},
+        {"uuid":"399861f6-6f57-413d-97cf-c73b3ab09de1","status":"OK"}
     ]
 }
 ```

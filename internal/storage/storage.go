@@ -1,8 +1,8 @@
 package goods
 
 type Storage interface {
-	ReserveGood(good Goods, store int) error
-	FreeGood(good Goods, store int) error
+	ReserveGood(good Goods) error
+	FreeGood(good Goods) error
 	CheckGoods(store int) ([]Goods, error)
 }
 
