@@ -37,7 +37,7 @@ func (p *Postgres) ReserveGood(good goods.Goods, store int) error {
 		return err
 	}
 	if rowsAffected < 1 {
-		return fmt.Errorf("no goods with this uuid or can't get store with this id or store is not avaliable it that moment")
+		return fmt.Errorf("no goods with this uuid or can't get store with this id or store is not avaliable in that moment")
 	}
 	res, err = txn.Exec(`
 	UPDATE
@@ -84,7 +84,7 @@ func (p *Postgres) FreeGood(good goods.Goods, store int) error {
 		return err
 	}
 	if rowsAffected < 1 {
-		return fmt.Errorf("no goods with this uuid or can't get store with this id or store is not avaliable it that moment")
+		return fmt.Errorf("no goods with this uuid or can't get store with this id or store is not avaliable in that moment")
 	}
 	res, err = txn.Exec(`
 	UPDATE 
@@ -138,7 +138,7 @@ func (p *Postgres) CheckGoods(store int) ([]goods.Goods, error) {
 		goodsResult = append(goodsResult, good)
 	}
 	if zeroRows < 1 {
-		return nil, fmt.Errorf("can't get store with this id or store is not avaliable it that moment")
+		return nil, fmt.Errorf("can't get store with this id or store is not avaliable in that moment")
 	}
 	return goodsResult, err
 }
