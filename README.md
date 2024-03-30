@@ -30,7 +30,7 @@ curl -H 'Content-Type: application/json' -X POST -d '{"store": 1}' http://localh
 }
 ```
 
-### Reserve goods in store
+### Reserve goods
 
 #### Request:
 ```
@@ -49,7 +49,7 @@ curl -H 'Content-Type: application/json' -X POST -d '{"goods": [
 }
 ```
 
-### Free goods in store
+### Free goods
 
 #### Request:
 ```
