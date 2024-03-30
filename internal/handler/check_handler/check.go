@@ -25,7 +25,7 @@ func CheckGoods(w http.ResponseWriter, r *http.Request, db goods.Storage) {
 			http.Error(w, fmt.Sprintf("error checking goods: %v", err), http.StatusInternalServerError)
 			return
 		}
-		w.WriteHeader(http.StatusCreated)
+		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
 		response := types.GoodsResp{Goods: goods}
 		jsonErr := json.NewEncoder(w).Encode(response)
