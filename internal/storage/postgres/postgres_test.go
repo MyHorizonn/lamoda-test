@@ -114,8 +114,7 @@ ALTER TABLE ONLY goods_in_store
 
 var populate_db string = `
 insert into store (name, accessibility) values ('store1', TRUE);
-insert into store (name, accessibility) values ('store2', TRUE);
-insert into store (name, accessibility) values ('store3', FALSE);
+insert into store (name, accessibility) values ('store2', FALSE);
 
 insert into goods (uuid, name, size) values ('1720f137-4e06-427a-aa0c-6b22c35eecc6', 'goods1', '50x50x10');
 insert into goods (uuid, name, size) values ('399861f6-6f57-413d-97cf-c73b3ab09de1', 'goods2', '10x10x10');
@@ -124,9 +123,7 @@ insert into goods (uuid, name, size) values ('399861f6-6f57-413d-97cf-c73b3ab09d
 insert into goods_in_store (store_id, goods_uuid, amount) values (1, '1720f137-4e06-427a-aa0c-6b22c35eecc6', 100);
 insert into goods_in_store (store_id, goods_uuid, amount) values (2, '1720f137-4e06-427a-aa0c-6b22c35eecc6', 50);
 insert into goods_in_store (store_id, goods_uuid, amount) values (1, '399861f6-6f57-413d-97cf-c73b3ab09de1', 200);
-insert into goods_in_store (store_id, goods_uuid, amount) values (2, '399861f6-6f57-413d-97cf-c73b3ab09de1', 300);
-insert into goods_in_store (store_id, goods_uuid, amount) values (3, '1720f137-4e06-427a-aa0c-6b22c35eecc6', 50);
-insert into goods_in_store (store_id, goods_uuid, amount) values (3, '399861f6-6f57-413d-97cf-c73b3ab09de1', 0);
+insert into goods_in_store (store_id, goods_uuid, amount) values (2, '399861f6-6f57-413d-97cf-c73b3ab09de1', 0);
 `
 
 var db *sql.DB
@@ -204,18 +201,18 @@ func TestPopulateDB(t *testing.T) {
 
 func TestCheckGoods(t *testing.T) {
 	postgres := Postgres{Client: db}
-	goods, err := postgres.CheckGoods(1)
+	resGoods, err := postgres.CheckGoods(1)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(goods) < 1 {
+	if len(resGoods) < 1 {
 		t.Fatal("zero goods")
 	}
 	trueGoods := map[string]int{"1720f137-4e06-427a-aa0c-6b22c35eecc6": 100, "399861f6-6f57-413d-97cf-c73b3ab09de1": 200}
-	if len(goods) != len(trueGoods) {
+	if len(resGoods) != len(trueGoods) {
 		t.Fatal("wrong number of goods")
 	}
-	for _, good := range goods {
+	for _, good := range resGoods {
 		if _, ok := trueGoods[good.Uuid]; !ok {
 			t.Fatal("wrong goods")
 		}
@@ -236,23 +233,31 @@ func TestReserveGoods(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	goods, err := postgres.CheckGoods(1)
+	resGoods, err := postgres.CheckGoods(1)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(goods) < 1 {
+	if len(resGoods) < 1 {
 		t.Fatal("zero goods")
 	}
 	trueGoods := map[string]int{"1720f137-4e06-427a-aa0c-6b22c35eecc6": 80, "399861f6-6f57-413d-97cf-c73b3ab09de1": 150}
-	if len(goods) != len(trueGoods) {
+	if len(resGoods) != len(trueGoods) {
 		t.Fatal("wrong number of goods")
 	}
-	for _, good := range goods {
+	for _, good := range resGoods {
 		if val, ok := trueGoods[good.Uuid]; !ok {
 			t.Fatal("wrong goods")
 		} else if val != good.Amount {
 			t.Fatal("wrong reserved goods")
 		}
+	}
+	err = postgres.ReserveGood(goods.Goods{Uuid: "399861f6-6f57-413d-97cf-c73b3ab09de1", Amount: 200}, 1)
+	if err == nil {
+		t.Fatal("should return error")
+	}
+	err = postgres.ReserveGood(goods.Goods{Uuid: "399861f6-6f57-413d-97cf-c73b3ab09de1", Amount: 50}, 2)
+	if err == nil {
+		t.Fatal("should return error")
 	}
 }
 
@@ -266,22 +271,30 @@ func TestFreeGoods(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	goods, err := postgres.CheckGoods(1)
+	resGoods, err := postgres.CheckGoods(1)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(goods) < 1 {
+	if len(resGoods) < 1 {
 		t.Fatal("zero goods")
 	}
 	trueGoods := map[string]int{"1720f137-4e06-427a-aa0c-6b22c35eecc6": 90, "399861f6-6f57-413d-97cf-c73b3ab09de1": 190}
-	if len(goods) != len(trueGoods) {
+	if len(resGoods) != len(trueGoods) {
 		t.Fatal("wrong number of goods")
 	}
-	for _, good := range goods {
+	for _, good := range resGoods {
 		if val, ok := trueGoods[good.Uuid]; !ok {
 			t.Fatal("wrong goods")
 		} else if val != good.Amount {
 			t.Fatal("wrong reserved goods")
 		}
+	}
+	err = postgres.FreeGood(goods.Goods{Uuid: "399861f6-6f57-413d-97cf-c73b3ab09de1", Amount: 100}, 1)
+	if err == nil {
+		t.Fatal("should return error")
+	}
+	err = postgres.FreeGood(goods.Goods{Uuid: "399861f6-6f57-413d-97cf-c73b3ab09de1", Amount: 40}, 2)
+	if err == nil {
+		t.Fatal("should return error")
 	}
 }
