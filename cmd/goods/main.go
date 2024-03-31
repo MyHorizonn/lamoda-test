@@ -24,9 +24,6 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	if err = dbOp.Ping(); err != nil {
-		log.Fatalln("can't connect to database")
-	}
 	defer dbOp.Close()
 	dbOp.SetMaxOpenConns(runtime.NumCPU())
 	db = &postgres.Postgres{Client: dbOp}
