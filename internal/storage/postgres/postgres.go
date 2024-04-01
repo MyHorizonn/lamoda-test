@@ -138,13 +138,6 @@ func (p *Postgres) FreeGood(good goods.Goods) error {
 }
 
 func (p *Postgres) CheckGoods(store int) ([]goods.Goods, error) {
-	txn, err := p.Client.Begin()
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		_ = txn.Rollback()
-	}()
 	goodsResult := make([]goods.Goods, 0)
 	good := goods.Goods{}
 	rows, err := p.Client.Query(`
